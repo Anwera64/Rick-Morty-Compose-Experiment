@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">Rick &amp; Morty Episode Data</string>
+    <string name="missing_episode_name">Missing episode name</string>
+    <string name="missing_episode_number">Missing episode number</string>
+    <string name="missing_airing_date">Missing airing date</string>
+    <string name="exception_message">There was a mistake in the request</string>
 </resources>

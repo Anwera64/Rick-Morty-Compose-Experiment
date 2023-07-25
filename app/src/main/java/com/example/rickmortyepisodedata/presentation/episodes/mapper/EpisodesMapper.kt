@@ -9,7 +9,7 @@ object EpisodesMapper {
         return EpisodeData(
             id = episodeDomainModel.id,
             name = episodeDomainModel.name,
-            episode = episodeDomainModel.episode,
+            episodeNumber = episodeDomainModel.episode,
             airDate = episodeDomainModel.airDate.toString() // TODO format it nicely
         )
     }
