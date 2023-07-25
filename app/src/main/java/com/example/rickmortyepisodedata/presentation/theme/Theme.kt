@@ -1,4 +1,4 @@
-package com.example.rickmortyepisodedata.ui.theme
+package com.example.rickmortyepisodedata.presentation.theme
 
 import android.app.Activity
 import android.os.Build
