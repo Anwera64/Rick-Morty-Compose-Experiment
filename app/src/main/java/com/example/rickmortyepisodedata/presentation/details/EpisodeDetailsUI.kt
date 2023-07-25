@@ -98,7 +98,6 @@ fun EpisodeDetails(
                 Text(text = character.name ?: stringResource(R.string.missing_character_name))
                 Text(text = "Gender: ${character.gender}")
                 Text(text = "Species: ${character.species}")
-                Text(text = "Created: ${character.created}")
             }
         }
     }
@@ -107,7 +106,7 @@ fun EpisodeDetails(
 private fun mockData() = EpisodeDetailData(
     EpisodeData("1", "Episode 1", "S01E01", "01/06/2023"),
     listOf(
-        CharacterData("Morty", "01/01/2021", "1", "Male", null, "human")
+        CharacterData("Morty", "1", "Male", null, "human")
     )
 )
 

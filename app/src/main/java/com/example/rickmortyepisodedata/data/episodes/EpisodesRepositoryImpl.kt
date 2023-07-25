@@ -9,6 +9,7 @@ import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
 import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
 import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
 import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
+import com.example.rickmortyepisodedata.utils.DateFormatter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -34,7 +35,7 @@ class EpisodesRepositoryImpl @Inject constructor(
                         id = result.id ?: error("Missing ID"),
                         name = result.name,
                         episode = result.episode,
-                        airDate = Date() // TODO parse string to date
+                        airDate = DateFormatter.parse(result.air_date, DateFormatter.FORMAT_2)
                     )
                 } ?: emptyList()
             }
@@ -52,13 +53,12 @@ class EpisodesRepositoryImpl @Inject constructor(
                         id = episode.id ?: error("Missing ID"),
                         name = episode.name,
                         episode = episode.episode,
-                        airDate = Date() // TODO parse string to date
+                        airDate = DateFormatter.parse(episode.air_date, DateFormatter.FORMAT_2)
                     ),
                     episode.characters.map { character ->
                         character ?: error("Null character data")
                         CharacterDomainModel(
                             character.name,
-                            Date(), // TODO parse string to date
                             character.id ?: error("Missing ID"),
                             character.gender,
                             character.image,

@@ -4,6 +4,7 @@ import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
 import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodeData
+import com.example.rickmortyepisodedata.utils.DateFormatter
 
 object EpisodesMapper {
 
@@ -12,7 +13,7 @@ object EpisodesMapper {
             id = episodeDomainModel.id,
             name = episodeDomainModel.name,
             episodeNumber = episodeDomainModel.episode,
-            airDate = episodeDomainModel.airDate.toString() // TODO format it nicely
+            airDate = DateFormatter.format(episodeDomainModel.airDate, DateFormatter.FORMAT_1)
         )
     }
 
