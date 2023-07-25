@@ -3,7 +3,7 @@ package com.example.rickmortyepisodedata.presentation.episodes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.presentation.episodes.mapper.EpisodesMapper
+import com.example.rickmortyepisodedata.presentation.mappers.EpisodesMapper
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodesState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
