@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -14,13 +15,16 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -70,43 +74,61 @@ fun EpisodeDetails(
     modifier: Modifier = Modifier
 ) {
     val details = state.episodeDetailData
-    LazyColumn(modifier.fillMaxSize()) {
-        item {
-            EpisodeDetailsView(
-                episode = details.details,
-                modifier = Modifier.padding(horizontal = 16.dp, 8.dp)
-            )
-            Text(
-                text = "Characters:",
-                style = MaterialTheme.typography.titleLarge,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-            )
-        }
-        items(details.characters) { character ->
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            ) {
-                AsyncImage(
-                    model = character.image,
-                    contentDescription = null,
-                    modifier = Modifier.padding(bottom = 8.dp)
-                )
-                Text(text = character.name ?: stringResource(R.string.missing_character_name))
-                Text(text = "Gender: ${character.gender}")
-                Text(text = "Species: ${character.species}")
+    Column(modifier = modifier.fillMaxSize()) {
+        EpisodeDetailsView(
+            episode = details.details,
+            modifier = Modifier.padding(horizontal = 16.dp, 8.dp)
+        )
+        Text(
+            text = "Characters:",
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+        )
+        LazyRow(modifier = Modifier.fillMaxWidth()) {
+            items(details.characters) { character ->
+                OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    CharacterCard(character)
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun CharacterCard(character: CharacterData) {
+    Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp)) {
+        AsyncImage(
+            model = character.image,
+            contentDescription = null,
+            modifier = Modifier
+                .padding(bottom = 8.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        Text(
+            text = character.name ?: stringResource(R.string.missing_character_name),
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+                .padding(bottom = 8.dp),
+            style = MaterialTheme.typography.titleMedium
+        )
+        Text(
+            text = "Gender: ${character.gender}",
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Text(
+            text = "Species: ${character.species}",
+            style = MaterialTheme.typography.bodyMedium
+        )
     }
 }
 
 private fun mockData() = EpisodeDetailData(
     EpisodeData("1", "Episode 1", "S01E01", "01/06/2023"),
     listOf(
-        CharacterData("Morty", "1", "Male", null, "human")
+        CharacterData("Morty", "1", "Male", null, "Human"),
+        CharacterData("Rick", "2", "Male", null, "Human")
     )
 )
 
