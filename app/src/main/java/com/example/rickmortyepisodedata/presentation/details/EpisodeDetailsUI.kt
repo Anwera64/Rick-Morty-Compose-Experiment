@@ -1,19 +1,21 @@
 package com.example.rickmortyepisodedata.presentation.details
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LocalTextStyle
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
@@ -24,7 +26,8 @@ import androidx.compose.runtime.State
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.layout
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -74,52 +77,71 @@ fun EpisodeDetails(
     modifier: Modifier = Modifier
 ) {
     val details = state.episodeDetailData
-    Column(modifier = modifier.fillMaxSize()) {
-        EpisodeDetailsView(
-            episode = details.details,
-            modifier = Modifier.padding(horizontal = 16.dp, 8.dp)
-        )
-        Text(
-            text = "Characters:",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp)
-        )
-        LazyRow(modifier = Modifier.fillMaxWidth()) {
-            items(details.characters) { character ->
-                OutlinedCard(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    CharacterCard(character)
-                }
+    LazyVerticalGrid(
+        modifier = modifier.fillMaxSize(),
+        columns = GridCells.Adaptive(180.dp),
+        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item(span = { GridItemSpan(maxLineSpan) }) {
+            Column(Modifier.fillMaxWidth()) {
+                EpisodeDetailsView(
+                    episode = details.details,
+                    modifier = Modifier.padding(vertical = 8.dp)
+                )
+                Text(
+                    text = "Characters:",
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(bottom = 16.dp),
+                    color = MaterialTheme.colorScheme.secondary
+                )
             }
+        }
+        items(details.characters) { character ->
+            CharacterCard(character)
         }
     }
 }
 
 @Composable
 private fun CharacterCard(character: CharacterData) {
-    Column(modifier = Modifier.padding(vertical = 8.dp, horizontal = 12.dp)) {
+    OutlinedCard {
         AsyncImage(
             model = character.image,
             contentDescription = null,
+            contentScale = ContentScale.FillWidth,
             modifier = Modifier
                 .padding(bottom = 8.dp)
-                .align(Alignment.CenterHorizontally)
+                .fillMaxWidth()
+                .clip(
+                    MaterialTheme.shapes.medium.copy(
+                        bottomEnd = CornerSize(0),
+                        bottomStart = CornerSize(0)
+                    )
+                )
         )
         Text(
             text = character.name ?: stringResource(R.string.missing_character_name),
             modifier = Modifier
                 .align(Alignment.CenterHorizontally)
-                .padding(bottom = 8.dp),
-            style = MaterialTheme.typography.titleMedium
+                .padding(bottom = 8.dp)
+                .padding(horizontal = 16.dp),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.tertiary
         )
         Text(
             text = "Gender: ${character.gender}",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
         )
         Text(
             text = "Species: ${character.species}",
-            style = MaterialTheme.typography.bodyMedium
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier
+                .padding(horizontal = 16.dp)
+                .padding(bottom = 16.dp)
         )
     }
 }

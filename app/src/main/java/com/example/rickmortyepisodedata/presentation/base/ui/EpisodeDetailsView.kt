@@ -14,8 +14,8 @@ fun EpisodeDetailsView(episode: EpisodeData, modifier: Modifier = Modifier) {
     Column(modifier) {
         Text(
             text = episode.name ?: stringResource(R.string.missing_episode_name),
-            color = MaterialTheme.colorScheme.onBackground,
-            style = MaterialTheme.typography.bodyLarge
+            color = MaterialTheme.colorScheme.primary,
+            style = MaterialTheme.typography.bodyLarge,
         )
         Text(
             text = episode.episodeNumber ?: stringResource(R.string.missing_episode_number),
