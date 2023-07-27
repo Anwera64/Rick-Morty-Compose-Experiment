@@ -5,8 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
 import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.asLiveData
+import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState
 import com.example.rickmortyepisodedata.presentation.theme.RickMortyEpisodeDataTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.filter
 
 @AndroidEntryPoint
 class EpisodeDetailsActivity : ComponentActivity() {
@@ -22,10 +25,15 @@ class EpisodeDetailsActivity : ComponentActivity() {
         val id = intent.getStringExtra(ID_KEY)
         viewModel.requestDetails(id)
 
+        viewModel.episodeStateFlow
+            .filter { state -> state is EpisodeDetailsState.BACK }
+            .asLiveData()
+            .observe(this) { finish() }
+
         setContent {
             val uiState = viewModel.episodeStateFlow.collectAsState()
             RickMortyEpisodeDataTheme {
-                EpisodeDetailsScreen(uiState, ::finish)
+                EpisodeDetailsScreen(uiState, viewModel::receiveEvent)
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.rickmortyepisodedata.presentation.details
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -14,18 +15,21 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +37,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import com.example.rickmortyepisodedata.R
 import com.example.rickmortyepisodedata.presentation.base.ui.EpisodeDetailsView
@@ -41,24 +44,26 @@ import com.example.rickmortyepisodedata.presentation.base.ui.ErrorView
 import com.example.rickmortyepisodedata.presentation.base.ui.LoadingView
 import com.example.rickmortyepisodedata.presentation.details.model.CharacterData
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
+import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsEvent
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodeData
 import com.example.rickmortyepisodedata.presentation.theme.RickMortyEpisodeDataTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodeDetailsScreen(uiState: State<EpisodeDetailsState>, backAction: () -> Unit) {
+fun EpisodeDetailsScreen(
+    uiState: State<EpisodeDetailsState>,
+    dispatchEvent: (EpisodeDetailsEvent) -> Unit
+) {
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = stringResource(R.string.episode_details)) },
-                navigationIcon = {
-                    IconButton(onClick = { backAction() }) {
-                        Icon(
-                            imageVector = Icons.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.back)
-                        )
-                    }
+            Toolbar(
+                backAction = { dispatchEvent(EpisodeDetailsEvent.BACK) },
+                searchAction = {
+                    val state = uiState.value as? EpisodeDetailsState.Success
+                    val data: EpisodeDetailData? = state?.episodeDetailData
+                    val event = EpisodeDetailsEvent.SearchToggled(data)
+                    dispatchEvent(event)
                 }
             )
         },
@@ -67,19 +72,81 @@ fun EpisodeDetailsScreen(uiState: State<EpisodeDetailsState>, backAction: () -> 
     ) { paddingValues ->
         val modifier = Modifier.padding(paddingValues)
         when (val state = uiState.value) {
-            is EpisodeDetailsState.EpisodeDetailsLoaded -> EpisodeDetails(state, modifier)
+            is EpisodeDetailsState.Success -> EpisodeDetails(
+                details = state.episodeDetailData,
+                dispatchEvent = dispatchEvent,
+                modifier = modifier
+            )
+
             is EpisodeDetailsState.Failed -> ErrorView(modifier)
             EpisodeDetailsState.LOADING -> LoadingView(modifier = modifier)
+            EpisodeDetailsState.BACK -> {
+                // Breaking SOLID here
+            }
         }
     }
 }
 
 @Composable
-fun EpisodeDetails(
-    state: EpisodeDetailsState.EpisodeDetailsLoaded,
-    modifier: Modifier = Modifier
+@OptIn(ExperimentalMaterial3Api::class)
+private fun SearchBar(
+    searchEnabled: Boolean,
+    searchQuery: String?,
+    dispatchEvent: (EpisodeDetailsEvent) -> Unit
 ) {
-    val details = state.episodeDetailData
+    AnimatedVisibility(
+        visible = searchEnabled,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 16.dp)
+    ) {
+        var searchFieldValue: String = rememberSaveable { searchQuery ?: "" }
+        OutlinedTextField(
+            value = searchFieldValue,
+            onValueChange = { query ->
+                searchFieldValue = query
+                val searchEvent = EpisodeDetailsEvent.SearchRequested(query)
+                dispatchEvent(searchEvent)
+            },
+            placeholder = { Text(stringResource(R.string.search_by_name)) },
+            leadingIcon = { SearchButton() },
+        )
+    }
+}
+
+@Composable
+private fun SearchButton(searchAction: () -> Unit = {}) {
+    IconButton(onClick = { searchAction() }) {
+        Icon(
+            imageVector = Icons.Filled.Search,
+            contentDescription = stringResource(R.string.search)
+        )
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun Toolbar(backAction: () -> Unit, searchAction: () -> Unit) {
+    TopAppBar(
+        title = { Text(text = stringResource(R.string.episode_details)) },
+        navigationIcon = {
+            IconButton(onClick = { backAction() }) {
+                Icon(
+                    imageVector = Icons.Filled.ArrowBack,
+                    contentDescription = stringResource(R.string.back)
+                )
+            }
+        },
+        actions = { SearchButton(searchAction) }
+    )
+}
+
+@Composable
+fun EpisodeDetails(
+    details: EpisodeDetailData,
+    modifier: Modifier = Modifier,
+    dispatchEvent: (EpisodeDetailsEvent) -> Unit,
+) {
     LazyVerticalGrid(
         modifier = modifier.fillMaxSize(),
         columns = GridCells.Adaptive(minSize = 180.dp),
@@ -96,9 +163,10 @@ fun EpisodeDetails(
                 Text(
                     text = "Characters:",
                     style = MaterialTheme.typography.titleLarge,
-                    modifier = Modifier.padding(bottom = 16.dp),
+                    modifier = Modifier.padding(bottom = 8.dp),
                     color = MaterialTheme.colorScheme.secondary
                 )
+                SearchBar(details.searchToggled, details.query, dispatchEvent)
             }
         }
         items(details.characters) { character ->
@@ -169,7 +237,7 @@ private fun mockData() = EpisodeDetailData(
 fun EpisodeDetailsPreview() {
     RickMortyEpisodeDataTheme {
         val uiState = rememberUpdatedState(
-            newValue = EpisodeDetailsState.EpisodeDetailsLoaded(mockData())
+            newValue = EpisodeDetailsState.Success(mockData())
         )
         EpisodeDetailsScreen(uiState, {})
     }
@@ -180,43 +248,28 @@ fun EpisodeDetailsPreview() {
 fun EpisodeDetailsPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
         val uiState =
-            rememberUpdatedState(newValue = EpisodeDetailsState.EpisodeDetailsLoaded(mockData()))
+            rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData()))
         EpisodeDetailsScreen(uiState, {})
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoadingPreview() {
+fun EpisodeDetailsSearchPreview() {
     RickMortyEpisodeDataTheme {
-        val uiState = rememberUpdatedState(newValue = EpisodeDetailsState.LOADING)
+        val uiState = rememberUpdatedState(
+            newValue = EpisodeDetailsState.Success(mockData())
+        )
         EpisodeDetailsScreen(uiState, {})
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun LoadingPreviewDark() {
+fun EpisodeDetailsSearchPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
-        val uiState = rememberUpdatedState(newValue = EpisodeDetailsState.LOADING)
-        EpisodeDetailsScreen(uiState, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ErrorPreview() {
-    RickMortyEpisodeDataTheme() {
-        val uiState = rememberUpdatedState(newValue = EpisodeDetailsState.Failed(Throwable()))
-        EpisodeDetailsScreen(uiState, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ErrorPreviewDark() {
-    RickMortyEpisodeDataTheme(darkTheme = true) {
-        val uiState = rememberUpdatedState(newValue = EpisodeDetailsState.Failed(Throwable()))
+        val uiState =
+            rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData()))
         EpisodeDetailsScreen(uiState, {})
     }
 }

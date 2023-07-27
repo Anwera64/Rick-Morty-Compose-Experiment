@@ -9,4 +9,6 @@
     <string name="episodes">Episodes</string>
     <string name="missing_character_name">Missing character name</string>
     <string name="missing_gender">Missing gender</string>
+    <string name="search">Search</string>
+    <string name="search_by_name">Search by name</string>
 </resources>

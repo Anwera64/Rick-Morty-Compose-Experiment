@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
 import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsEvent
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState
 import com.example.rickmortyepisodedata.presentation.mappers.EpisodesMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -22,12 +23,16 @@ class EpisodeDetailsViewModel @Inject constructor(
         MutableStateFlow<EpisodeDetailsState>(EpisodeDetailsState.LOADING)
     val episodeStateFlow: StateFlow<EpisodeDetailsState> = _episodeStateflow
 
+    private var searchToggled: Boolean = false
+    private var id: String? = null
+
     fun requestDetails(id: String?) = viewModelScope.launch {
         if (id == null) {
             _episodeStateflow.emit(EpisodeDetailsState.Failed(Throwable("Null ID")))
             return@launch
         }
-
+        this@EpisodeDetailsViewModel.id = id
+        _episodeStateflow.emit(EpisodeDetailsState.LOADING)
         useCase.getEpisodeDetails(id)
             .catch { throwable ->
                 val newState = EpisodeDetailsState.Failed(throwable)
@@ -35,8 +40,34 @@ class EpisodeDetailsViewModel @Inject constructor(
             }
             .collect { domainModel: EpisodeDetailsDomainModel ->
                 val episodeDetailData = EpisodesMapper.mapEpisodeDetailModelToData(domainModel)
-                val newState = EpisodeDetailsState.EpisodeDetailsLoaded(episodeDetailData)
+                val newState = EpisodeDetailsState.Success(episodeDetailData)
                 _episodeStateflow.emit(newState)
             }
+    }
+
+    fun receiveEvent(event: EpisodeDetailsEvent) = viewModelScope.launch {
+        when (event) {
+            EpisodeDetailsEvent.BACK -> _episodeStateflow.emit(EpisodeDetailsState.BACK)
+            is EpisodeDetailsEvent.SearchRequested -> TODO()
+            is EpisodeDetailsEvent.SearchToggled -> handleSearchtoggledEvent(event)
+        }
+    }
+
+    private suspend fun handleSearchtoggledEvent(event: EpisodeDetailsEvent.SearchToggled) {
+        searchToggled = !searchToggled
+        if (searchToggled) {
+            dispatchSearchToggled(event)
+        } else {
+            requestDetails(id)
+        }
+    }
+
+    private suspend fun dispatchSearchToggled(event: EpisodeDetailsEvent.SearchToggled) {
+        if (event.episodeDetailData == null) {
+            _episodeStateflow.emit(EpisodeDetailsState.Failed(Throwable("Missing data")))
+            return
+        }
+        val state = EpisodeDetailsState.Success(event.episodeDetailData.copy(searchToggled = true))
+        _episodeStateflow.emit(state)
     }
 }
