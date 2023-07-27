@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -156,6 +157,7 @@ private fun Toolbar(backAction: () -> Unit, searchAction: () -> Unit) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun EpisodeDetails(
     details: EpisodeDetailData,
@@ -187,15 +189,18 @@ fun EpisodeDetails(
                 }
             }
         }
-        items(details.characters) { character ->
-            CharacterCard(character)
+        items(details.characters, key = CharacterData::id) { character ->
+            CharacterCard(
+                character = character,
+                modifier = Modifier.animateItemPlacement()
+            )
         }
     }
 }
 
 @Composable
-private fun CharacterCard(character: CharacterData) {
-    OutlinedCard {
+private fun CharacterCard(character: CharacterData, modifier: Modifier = Modifier) {
+    OutlinedCard(modifier) {
         SubcomposeAsyncImage(
             model = character.image,
             contentDescription = null,
