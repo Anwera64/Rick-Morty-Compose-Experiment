@@ -1,35 +1,38 @@
 package com.example.rickmortyepisodedata.domain.episodes
 
+import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
 import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
 import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
 import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
-import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.onEach
 import javax.inject.Inject
 
 class EpisodesUseCase @Inject constructor(private val episodeRepository: EpisodesRepository) {
+
+    private var originalCharacterList: List<CharacterDomainModel> = emptyList()
 
     suspend fun listEpisodes(page: Int): Flow<List<EpisodeDomainModel>> {
         return episodeRepository.listEpisodes(page)
     }
 
     suspend fun getEpisodeDetails(id: String): Flow<EpisodeDetailsDomainModel> {
-        return episodeRepository.getEpisodeDetails(id)
+        return episodeRepository
+            .getEpisodeDetails(id)
+            .onEach { detailsDomainModel ->
+                originalCharacterList = detailsDomainModel.characterList
+            }
     }
 
-    suspend fun filterCharacters(
-        episodeDetailData: EpisodeDetailData,
-        query: String
-    ): Flow<EpisodeDetailData> {
+    suspend fun filterCharacters(query: String): Flow<List<CharacterDomainModel>> {
         return flow {
-            val newList = episodeDetailData.characters.filter { characterData ->
+            val newList = originalCharacterList.filter { characterData ->
                 val normalizedQuery = query.lowercase()
                 val normalizedName = characterData.name?.lowercase()
                 normalizedName?.contains(normalizedQuery) ?: false
             }
-            val updatedData = episodeDetailData.copy(characters = newList)
-            emit(updatedData)
+            emit(newList)
         }
     }
 }

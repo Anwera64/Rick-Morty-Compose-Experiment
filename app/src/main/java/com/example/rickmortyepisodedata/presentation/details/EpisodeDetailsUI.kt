@@ -91,8 +91,8 @@ fun EpisodeDetailsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun SearchBar(
     searchEnabled: Boolean,
-    searchQuery: String?,
-    dispatchEvent: (EpisodeDetailsEvent) -> Unit
+    searchQuery: String,
+    searchAction: (String) -> Unit
 ) {
     AnimatedVisibility(
         visible = searchEnabled,
@@ -100,14 +100,9 @@ private fun SearchBar(
             .fillMaxWidth()
             .padding(bottom = 16.dp)
     ) {
-        var searchFieldValue: String = rememberSaveable { searchQuery ?: "" }
         OutlinedTextField(
-            value = searchFieldValue,
-            onValueChange = { query ->
-                searchFieldValue = query
-                val searchEvent = EpisodeDetailsEvent.SearchRequested(query)
-                dispatchEvent(searchEvent)
-            },
+            value = searchQuery,
+            onValueChange = { query -> searchAction(query) },
             placeholder = { Text(stringResource(R.string.search_by_name)) },
             leadingIcon = { SearchButton() },
         )
@@ -166,7 +161,10 @@ fun EpisodeDetails(
                     modifier = Modifier.padding(bottom = 8.dp),
                     color = MaterialTheme.colorScheme.secondary
                 )
-                SearchBar(details.searchToggled, details.query, dispatchEvent)
+                SearchBar(details.searchToggled, details.query ?: "") { query ->
+                    val event = EpisodeDetailsEvent.SearchRequested(details, query)
+                    dispatchEvent(event)
+                }
             }
         }
         items(details.characters) { character ->
@@ -224,12 +222,14 @@ private fun CharacterCard(character: CharacterData) {
     }
 }
 
-private fun mockData() = EpisodeDetailData(
+private fun mockData(searchEnabled: Boolean = false, query: String? = null) = EpisodeDetailData(
     EpisodeData("1", "Episode 1", "S01E01", "01/06/2023"),
     listOf(
         CharacterData("Morty", "1", "Male", null, "Human"),
         CharacterData("Rick", "2", "Male", null, "Human")
-    )
+    ),
+    searchToggled = searchEnabled,
+    query = query
 )
 
 @Preview(showBackground = true)
@@ -258,7 +258,7 @@ fun EpisodeDetailsPreviewDark() {
 fun EpisodeDetailsSearchPreview() {
     RickMortyEpisodeDataTheme {
         val uiState = rememberUpdatedState(
-            newValue = EpisodeDetailsState.Success(mockData())
+            newValue = EpisodeDetailsState.Success(mockData(searchEnabled = true))
         )
         EpisodeDetailsScreen(uiState, {})
     }
@@ -269,7 +269,7 @@ fun EpisodeDetailsSearchPreview() {
 fun EpisodeDetailsSearchPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
         val uiState =
-            rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData()))
+            rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData(searchEnabled = true)))
         EpisodeDetailsScreen(uiState, {})
     }
 }

@@ -3,9 +3,12 @@ package com.example.rickmortyepisodedata.presentation.details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
+import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
 import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsEvent
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState
+import com.example.rickmortyepisodedata.presentation.mappers.CharacterMapper
 import com.example.rickmortyepisodedata.presentation.mappers.EpisodesMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -48,12 +51,29 @@ class EpisodeDetailsViewModel @Inject constructor(
     fun receiveEvent(event: EpisodeDetailsEvent) = viewModelScope.launch {
         when (event) {
             EpisodeDetailsEvent.BACK -> _episodeStateflow.emit(EpisodeDetailsState.BACK)
-            is EpisodeDetailsEvent.SearchRequested -> TODO()
-            is EpisodeDetailsEvent.SearchToggled -> handleSearchtoggledEvent(event)
+            is EpisodeDetailsEvent.SearchRequested -> handleSearchEvent(event)
+            is EpisodeDetailsEvent.SearchToggled -> handleSearchToggledEvent(event)
         }
     }
 
-    private suspend fun handleSearchtoggledEvent(event: EpisodeDetailsEvent.SearchToggled) {
+    private suspend fun handleSearchEvent(event: EpisodeDetailsEvent.SearchRequested) {
+        useCase.filterCharacters(event.query)
+            .catch { throwable ->
+                val newState = EpisodeDetailsState.Failed(throwable)
+                _episodeStateflow.emit(newState)
+            }
+            .collect { filteredData: List<CharacterDomainModel> ->
+                val mappedFilteredList = filteredData.map(CharacterMapper::mapCharacterModelToData)
+                val newData = event.episodeDetailData.copy(
+                    characters = mappedFilteredList,
+                    query = event.query
+                )
+                val newState = EpisodeDetailsState.Success(newData)
+                _episodeStateflow.emit(newState)
+            }
+    }
+
+    private suspend fun handleSearchToggledEvent(event: EpisodeDetailsEvent.SearchToggled) {
         searchToggled = !searchToggled
         if (searchToggled) {
             dispatchSearchToggled(event)
