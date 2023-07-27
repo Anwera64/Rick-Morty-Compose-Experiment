@@ -11,4 +11,5 @@
     <string name="missing_gender">Missing gender</string>
     <string name="search">Search</string>
     <string name="search_by_name">Search by name</string>
+    <string name="close">close</string>
 </resources>

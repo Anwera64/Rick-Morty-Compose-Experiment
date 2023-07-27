@@ -57,16 +57,20 @@ class EpisodeDetailsViewModel @Inject constructor(
     }
 
     private suspend fun handleSearchEvent(event: EpisodeDetailsEvent.SearchRequested) {
-        useCase.filterCharacters(event.query)
+        filterCharacters(event.query, event.episodeDetailData)
+    }
+
+    private suspend fun filterCharacters(query: String, data: EpisodeDetailData) {
+        useCase.filterCharacters(query)
             .catch { throwable ->
                 val newState = EpisodeDetailsState.Failed(throwable)
                 _episodeStateflow.emit(newState)
             }
             .collect { filteredData: List<CharacterDomainModel> ->
                 val mappedFilteredList = filteredData.map(CharacterMapper::mapCharacterModelToData)
-                val newData = event.episodeDetailData.copy(
+                val newData = data.copy(
                     characters = mappedFilteredList,
-                    query = event.query
+                    query = query
                 )
                 val newState = EpisodeDetailsState.Success(newData)
                 _episodeStateflow.emit(newState)
@@ -75,10 +79,14 @@ class EpisodeDetailsViewModel @Inject constructor(
 
     private suspend fun handleSearchToggledEvent(event: EpisodeDetailsEvent.SearchToggled) {
         searchToggled = !searchToggled
-        if (searchToggled) {
-            dispatchSearchToggled(event)
-        } else {
-            requestDetails(id)
+        when {
+            searchToggled -> dispatchSearchToggled(event)
+            event.episodeDetailData != null -> filterCharacters(
+                "",
+                event.episodeDetailData.copy(searchToggled = false)
+            )
+
+            else -> requestDetails(id)
         }
     }
 

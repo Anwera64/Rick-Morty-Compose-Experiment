@@ -1,6 +1,11 @@
 package com.example.rickmortyepisodedata.presentation.details
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -15,6 +20,7 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -88,7 +94,7 @@ fun EpisodeDetailsScreen(
 }
 
 @Composable
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalAnimationApi::class)
 private fun SearchBar(
     searchEnabled: Boolean,
     searchQuery: String,
@@ -105,6 +111,20 @@ private fun SearchBar(
             onValueChange = { query -> searchAction(query) },
             placeholder = { Text(stringResource(R.string.search_by_name)) },
             leadingIcon = { SearchButton() },
+            trailingIcon = {
+                AnimatedVisibility(
+                    visible = searchQuery.isNotBlank(),
+                    enter = fadeIn() + scaleIn(),
+                    exit = fadeOut() + scaleOut()
+                ) {
+                    IconButton(onClick = { searchAction("") }) {
+                        Icon(
+                            imageVector = Icons.Filled.Clear,
+                            contentDescription = stringResource(R.string.close)
+                        )
+                    }
+                }
+            }
         )
     }
 }
