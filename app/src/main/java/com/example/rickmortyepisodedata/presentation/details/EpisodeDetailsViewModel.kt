@@ -50,7 +50,6 @@ class EpisodeDetailsViewModel @Inject constructor(
 
     fun receiveEvent(event: EpisodeDetailsEvent) = viewModelScope.launch {
         when (event) {
-            EpisodeDetailsEvent.BACK -> _episodeStateflow.emit(EpisodeDetailsState.BACK)
             is EpisodeDetailsEvent.SearchRequested -> handleSearchEvent(event)
             is EpisodeDetailsEvent.SearchToggled -> handleSearchToggledEvent(event)
         }

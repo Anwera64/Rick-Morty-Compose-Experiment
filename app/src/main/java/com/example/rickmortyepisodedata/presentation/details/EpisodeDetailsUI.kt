@@ -67,8 +67,12 @@ fun EpisodeDetailsScreen(
 ) {
     val uiState = viewModel.episodeStateFlow.collectAsState()
     viewModel.requestDetails(id)
+    val navHostController = LocalNavController.current
     RickMortyEpisodeDataTheme {
-        EpisodeDetailsContent(uiState, viewModel::receiveEvent)
+        EpisodeDetailsContent(
+            uiState = uiState,
+            dispatchEvent = viewModel::receiveEvent,
+            backAction = { navHostController.popBackStack() })
     }
 }
 
@@ -76,12 +80,13 @@ fun EpisodeDetailsScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 private fun EpisodeDetailsContent(
     uiState: State<EpisodeDetailsState>,
-    dispatchEvent: (EpisodeDetailsEvent) -> Unit
+    dispatchEvent: (EpisodeDetailsEvent) -> Unit,
+    backAction: () -> Unit,
 ) {
     Scaffold(
         topBar = {
             Toolbar(
-                backAction = { dispatchEvent(EpisodeDetailsEvent.BACK) },
+                backAction = backAction,
                 searchAction = {
                     val state = uiState.value as? EpisodeDetailsState.Success
                     val data: EpisodeDetailData? = state?.episodeDetailData
@@ -103,7 +108,6 @@ private fun EpisodeDetailsContent(
 
             is EpisodeDetailsState.Failed -> ErrorView(modifier)
             EpisodeDetailsState.LOADING -> LoadingView(modifier = modifier)
-            EpisodeDetailsState.BACK -> LocalNavController.current.popBackStack()
         }
     }
 }
@@ -278,7 +282,7 @@ fun EpisodeDetailsPreview() {
         val uiState = rememberUpdatedState(
             newValue = EpisodeDetailsState.Success(mockData())
         )
-        EpisodeDetailsContent(uiState, {})
+        EpisodeDetailsContent(uiState, {}, {})
     }
 }
 
@@ -288,7 +292,7 @@ fun EpisodeDetailsPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
         val uiState =
             rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData()))
-        EpisodeDetailsContent(uiState, {})
+        EpisodeDetailsContent(uiState, {}, {})
     }
 }
 
@@ -299,7 +303,7 @@ fun EpisodeDetailsSearchPreview() {
         val uiState = rememberUpdatedState(
             newValue = EpisodeDetailsState.Success(mockData(searchEnabled = true))
         )
-        EpisodeDetailsContent(uiState, {})
+        EpisodeDetailsContent(uiState, {}, {})
     }
 }
 
@@ -309,6 +313,6 @@ fun EpisodeDetailsSearchPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
         val uiState =
             rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData(searchEnabled = true)))
-        EpisodeDetailsContent(uiState, {})
+        EpisodeDetailsContent(uiState, {}, {})
     }
 }

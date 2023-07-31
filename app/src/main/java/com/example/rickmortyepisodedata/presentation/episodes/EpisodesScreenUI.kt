@@ -13,6 +13,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberUpdatedState
@@ -21,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.rickmortyepisodedata.R
 import com.example.rickmortyepisodedata.presentation.base.ui.EpisodeDetailsView
 import com.example.rickmortyepisodedata.presentation.base.ui.ErrorView
@@ -36,28 +38,34 @@ const val EPISODES_KEY = "episodes"
 fun EpisodesScreen(viewModel: EpisodesViewModel = hiltViewModel()) {
     val uiState = viewModel.episodeStateFlow.collectAsState()
     RickMortyEpisodeDataTheme {
-        EpisodesScreenContent(uiState)
+        val navHostController = LocalNavController.current
+        EpisodesScreenContent(
+            uiState,
+            onEpisodeClicked = { id -> navHostController.navigate("$EPISODES_KEY/$id") },
+        )
     }
 }
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun EpisodesScreenContent(uiState: State<EpisodesState>) {
+private fun EpisodesScreenContent(
+    uiState: State<EpisodesState>,
+    onEpisodeClicked: (id: String?) -> Unit,
+) {
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = stringResource(R.string.episodes)) },
             )
         },
-        modifier = Modifier
-            .fillMaxSize(),
+        modifier = Modifier.fillMaxSize(),
     ) { paddingValues ->
         val modifier = Modifier.padding(paddingValues)
-        val navHostController = LocalNavController.current
+
         when (val state = uiState.value) {
             is EpisodesState.EpisodesLoaded -> EpisodesList(
                 loadedState = state,
-                onEpisodeClicked = { id -> navHostController.navigate("$EPISODES_KEY/$id") },
+                onEpisodeClicked = onEpisodeClicked,
                 modifier = modifier
             )
 
@@ -106,7 +114,7 @@ fun EpisodePreview() {
                 mockData()
             )
         )
-        EpisodesScreenContent(uiState)
+        EpisodesScreenContent(uiState, {})
     }
 }
 
@@ -119,7 +127,7 @@ fun EpisodePreviewDark() {
                 mockData()
             )
         )
-        EpisodesScreenContent(uiState)
+        EpisodesScreenContent(uiState, {})
     }
 }
 

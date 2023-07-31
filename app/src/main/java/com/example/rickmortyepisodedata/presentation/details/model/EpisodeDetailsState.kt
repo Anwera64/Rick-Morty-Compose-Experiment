@@ -7,6 +7,4 @@ sealed class EpisodeDetailsState {
     class Success(val episodeDetailData: EpisodeDetailData) : EpisodeDetailsState()
 
     class Failed(val throwable: Throwable) : EpisodeDetailsState()
-
-    object BACK : EpisodeDetailsState()
 }
