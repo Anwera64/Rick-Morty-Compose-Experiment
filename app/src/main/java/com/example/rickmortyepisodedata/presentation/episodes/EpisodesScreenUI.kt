@@ -1,6 +1,5 @@
-package com.example.rickmortyepisodedata.presentation.episodes.ui
+package com.example.rickmortyepisodedata.presentation.episodes
 
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -10,17 +9,18 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.rickmortyepisodedata.R
 import com.example.rickmortyepisodedata.presentation.base.ui.EpisodeDetailsView
 import com.example.rickmortyepisodedata.presentation.base.ui.ErrorView
@@ -28,11 +28,21 @@ import com.example.rickmortyepisodedata.presentation.base.ui.LoadingView
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodeData
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodesState
 import com.example.rickmortyepisodedata.presentation.theme.RickMortyEpisodeDataTheme
+import com.example.rickmortyepisodedata.utils.LocalNavController
 
+const val EPISODES_KEY = "episodes"
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EpisodesScreen(uiState: State<EpisodesState>, onEpisodeClicked: (id: String?) -> Unit) {
+fun EpisodesScreen(viewModel: EpisodesViewModel = hiltViewModel()) {
+    val uiState = viewModel.episodeStateFlow.collectAsState()
+    RickMortyEpisodeDataTheme {
+        EpisodesScreenContent(uiState)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun EpisodesScreenContent(uiState: State<EpisodesState>) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -43,10 +53,11 @@ fun EpisodesScreen(uiState: State<EpisodesState>, onEpisodeClicked: (id: String?
             .fillMaxSize(),
     ) { paddingValues ->
         val modifier = Modifier.padding(paddingValues)
+        val navHostController = LocalNavController.current
         when (val state = uiState.value) {
             is EpisodesState.EpisodesLoaded -> EpisodesList(
                 loadedState = state,
-                onEpisodeClicked = onEpisodeClicked,
+                onEpisodeClicked = { id -> navHostController.navigate("$EPISODES_KEY/$id") },
                 modifier = modifier
             )
 
@@ -88,15 +99,6 @@ private fun EpisodesList(
 
 @Preview(showBackground = true)
 @Composable
-fun LoadingPreview() {
-    RickMortyEpisodeDataTheme {
-        val uiState = rememberUpdatedState(newValue = EpisodesState.LOADING)
-        EpisodesScreen(uiState, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
 fun EpisodePreview() {
     RickMortyEpisodeDataTheme {
         val uiState = rememberUpdatedState(
@@ -104,16 +106,7 @@ fun EpisodePreview() {
                 mockData()
             )
         )
-        EpisodesScreen(uiState, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun LoadingPreviewDark() {
-    RickMortyEpisodeDataTheme(darkTheme = true) {
-        val uiState = rememberUpdatedState(newValue = EpisodesState.LOADING)
-        EpisodesScreen(uiState, {})
+        EpisodesScreenContent(uiState)
     }
 }
 
@@ -126,25 +119,7 @@ fun EpisodePreviewDark() {
                 mockData()
             )
         )
-        EpisodesScreen(uiState, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ErrorPreview() {
-    RickMortyEpisodeDataTheme() {
-        val uiState = rememberUpdatedState(newValue = EpisodesState.Failed(Throwable()))
-        EpisodesScreen(uiState, {})
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun ErrorPreviewDark() {
-    RickMortyEpisodeDataTheme(darkTheme = true) {
-        val uiState = rememberUpdatedState(newValue = EpisodesState.Failed(Throwable()))
-        EpisodesScreen(uiState, {})
+        EpisodesScreenContent(uiState)
     }
 }
 

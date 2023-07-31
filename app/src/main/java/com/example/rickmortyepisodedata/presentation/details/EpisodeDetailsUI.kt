@@ -35,8 +35,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberUpdatedState
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,6 +44,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
 import com.example.rickmortyepisodedata.R
 import com.example.rickmortyepisodedata.presentation.base.ui.EpisodeDetailsView
@@ -55,10 +56,25 @@ import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetail
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodeData
 import com.example.rickmortyepisodedata.presentation.theme.RickMortyEpisodeDataTheme
+import com.example.rickmortyepisodedata.utils.LocalNavController
 
-@OptIn(ExperimentalMaterial3Api::class)
+const val ID_ARGUMENT_KEY = "id"
+
 @Composable
 fun EpisodeDetailsScreen(
+    id: String,
+    viewModel: EpisodeDetailsViewModel = hiltViewModel()
+) {
+    val uiState = viewModel.episodeStateFlow.collectAsState()
+    viewModel.requestDetails(id)
+    RickMortyEpisodeDataTheme {
+        EpisodeDetailsContent(uiState, viewModel::receiveEvent)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun EpisodeDetailsContent(
     uiState: State<EpisodeDetailsState>,
     dispatchEvent: (EpisodeDetailsEvent) -> Unit
 ) {
@@ -87,9 +103,7 @@ fun EpisodeDetailsScreen(
 
             is EpisodeDetailsState.Failed -> ErrorView(modifier)
             EpisodeDetailsState.LOADING -> LoadingView(modifier = modifier)
-            EpisodeDetailsState.BACK -> {
-                // Breaking SOLID here
-            }
+            EpisodeDetailsState.BACK -> LocalNavController.current.popBackStack()
         }
     }
 }
@@ -264,7 +278,7 @@ fun EpisodeDetailsPreview() {
         val uiState = rememberUpdatedState(
             newValue = EpisodeDetailsState.Success(mockData())
         )
-        EpisodeDetailsScreen(uiState, {})
+        EpisodeDetailsContent(uiState, {})
     }
 }
 
@@ -274,7 +288,7 @@ fun EpisodeDetailsPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
         val uiState =
             rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData()))
-        EpisodeDetailsScreen(uiState, {})
+        EpisodeDetailsContent(uiState, {})
     }
 }
 
@@ -285,7 +299,7 @@ fun EpisodeDetailsSearchPreview() {
         val uiState = rememberUpdatedState(
             newValue = EpisodeDetailsState.Success(mockData(searchEnabled = true))
         )
-        EpisodeDetailsScreen(uiState, {})
+        EpisodeDetailsContent(uiState, {})
     }
 }
 
@@ -295,6 +309,6 @@ fun EpisodeDetailsSearchPreviewDark() {
     RickMortyEpisodeDataTheme(darkTheme = true) {
         val uiState =
             rememberUpdatedState(newValue = EpisodeDetailsState.Success(mockData(searchEnabled = true)))
-        EpisodeDetailsScreen(uiState, {})
+        EpisodeDetailsContent(uiState, {})
     }
 }
