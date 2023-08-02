@@ -1,10 +1,10 @@
 package com.example.rickmortyepisodedata
 
-import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
-import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
+import com.example.rickmortyepisodedata.episodes.EpisodesUseCase
+import com.example.rickmortyepisodedata.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.repositories.EpisodesRepository
 import io.mockk.CapturingSlot
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,12 +22,13 @@ import org.junit.Test
 
 class EpisodeUseCaseTest {
 
-    private val repository: EpisodesRepository = mockk()
-    private val useCase: EpisodesUseCase = EpisodesUseCase(repository)
+    private val repository: com.example.rickmortyepisodedata.repositories.EpisodesRepository = mockk()
+    private val useCase: com.example.rickmortyepisodedata.episodes.EpisodesUseCase =
+        com.example.rickmortyepisodedata.episodes.EpisodesUseCase(repository)
 
     @Test
     fun `GIVEN a page number WHEN episode list requested THEN episode list returned`() = runTest {
-        val expectedResponse: EpisodeDomainModel = mockk()
+        val expectedResponse: com.example.rickmortyepisodedata.models.EpisodeDomainModel = mockk()
         val expectedList = listOf(expectedResponse)
         val page = 0
         coEvery { repository.listEpisodes(any()) } returns flow { emit(expectedList) }
@@ -41,7 +42,7 @@ class EpisodeUseCaseTest {
     @Test
     fun `GIVEN an ID WHEN episode details requested THEN episode details returned`() = runTest {
         val id = "ID"
-        val expectedResponse: EpisodeDetailsDomainModel = mockk()
+        val expectedResponse: com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel = mockk()
 
         every { expectedResponse.characterList } returns emptyList()
         coEvery { repository.getEpisodeDetails(any()) } returns flow { emit(expectedResponse) }
@@ -55,14 +56,14 @@ class EpisodeUseCaseTest {
     @Test
     fun `GIVEN episode details requested WHEN filtered THEN only 1 result returned`() = runTest {
         val id = "ID"
-        val rickMock = mockk<CharacterDomainModel> {
+        val rickMock = mockk<com.example.rickmortyepisodedata.models.CharacterDomainModel> {
             every { name } returns "Rick"
         }
-        val mortyMock = mockk<CharacterDomainModel> {
+        val mortyMock = mockk<com.example.rickmortyepisodedata.models.CharacterDomainModel> {
             every { name } returns "Morty"
         }
         val charList = listOf(rickMock, mortyMock)
-        val expectedResponse: EpisodeDetailsDomainModel = mockk {
+        val expectedResponse: com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel = mockk {
             every { characterList } returns charList
         }
 
@@ -81,14 +82,14 @@ class EpisodeUseCaseTest {
     @Test
     fun `GIVEN episode details requested WHEN filtered THEN no result returned`() = runTest {
         val id = "ID"
-        val rickMock = mockk<CharacterDomainModel> {
+        val rickMock = mockk<com.example.rickmortyepisodedata.models.CharacterDomainModel> {
             every { name } returns "Rick"
         }
-        val mortyMock = mockk<CharacterDomainModel> {
+        val mortyMock = mockk<com.example.rickmortyepisodedata.models.CharacterDomainModel> {
             every { name } returns "Morty"
         }
         val charList = listOf(rickMock, mortyMock)
-        val expectedResponse: EpisodeDetailsDomainModel = mockk {
+        val expectedResponse: com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel = mockk {
             every { characterList } returns charList
         }
 
@@ -101,6 +102,6 @@ class EpisodeUseCaseTest {
 
         val finalResult = useCase.filterCharacters("Bazinga").first()
 
-        assertEquals(emptyList<CharacterDomainModel>(), finalResult)
+        assertEquals(emptyList<com.example.rickmortyepisodedata.models.CharacterDomainModel>(), finalResult)
     }
 }

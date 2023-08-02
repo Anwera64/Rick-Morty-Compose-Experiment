@@ -1,4 +1,4 @@
-package com.example.rickmortyepisodedata.domain.models
+package com.example.rickmortyepisodedata.models
 
 import java.util.Date
 

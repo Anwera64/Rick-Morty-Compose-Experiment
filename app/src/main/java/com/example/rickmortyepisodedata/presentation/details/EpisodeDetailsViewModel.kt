@@ -2,9 +2,9 @@ package com.example.rickmortyepisodedata.presentation.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.episodes.EpisodesUseCase
+import com.example.rickmortyepisodedata.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsEvent
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState

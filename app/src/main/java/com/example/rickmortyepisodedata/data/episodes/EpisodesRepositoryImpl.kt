@@ -5,17 +5,16 @@ import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Optional
 import com.example.rickmortyepisodedata.EpisodeDetailsQuery
 import com.example.rickmortyepisodedata.EpisodeQuery
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
-import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
+import com.example.rickmortyepisodedata.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.repositories.EpisodesRepository
 import com.example.rickmortyepisodedata.utils.DateFormatter
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import java.util.Date
 import javax.inject.Inject
 
 class EpisodesRepositoryImpl @Inject constructor(

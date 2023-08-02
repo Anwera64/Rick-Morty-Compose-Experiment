@@ -2,9 +2,9 @@ package com.example.rickmortyepisodedata.presentation.episodes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.presentation.mappers.EpisodesMapper
+import com.example.rickmortyepisodedata.episodes.EpisodesUseCase
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodesState
+import com.example.rickmortyepisodedata.presentation.mappers.EpisodesMapper
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,14 +17,14 @@ class EpisodesViewModel @Inject constructor(
     private val useCase: EpisodesUseCase
 ) : ViewModel() {
 
-    private val _episodeStateflow: MutableStateFlow<EpisodesState> = MutableStateFlow(EpisodesState.LOADING)
+    private val _episodeStateflow = MutableStateFlow<EpisodesState>(EpisodesState.LOADING)
     val episodeStateFlow: StateFlow<EpisodesState> = _episodeStateflow
 
     init {
         requestEpisodes()
     }
 
-    fun requestEpisodes(page: Int = 0) = viewModelScope.launch {
+    private fun requestEpisodes(page: Int = 0) = viewModelScope.launch {
         _episodeStateflow.emit(EpisodesState.LOADING)
         useCase.listEpisodes(page)
             .catch { throwable ->

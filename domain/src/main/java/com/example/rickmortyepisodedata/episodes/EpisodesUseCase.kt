@@ -1,9 +1,9 @@
-package com.example.rickmortyepisodedata.domain.episodes
+package com.example.rickmortyepisodedata.episodes
 
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
-import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
+import com.example.rickmortyepisodedata.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.repositories.EpisodesRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.onEach
