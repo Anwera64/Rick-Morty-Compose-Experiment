@@ -1,7 +1,6 @@
 package com.example.rickmortyepisodedata.presentation.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -11,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LoadingView(modifier: Modifier) {
-    Box(modifier = modifier.fillMaxSize()) {
+fun LoadingView(modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
         CircularProgressIndicator(
             modifier = Modifier
                 .wrapContentSize()

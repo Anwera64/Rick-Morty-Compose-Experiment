@@ -1,7 +1,7 @@
 package com.example.rickmortyepisodedata.presentation.mappers
 
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodeDomainModel
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodeData
 import com.example.rickmortyepisodedata.domain.utils.DateFormatter

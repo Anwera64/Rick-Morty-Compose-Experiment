@@ -107,7 +107,7 @@ private fun EpisodeDetailsContent(
             )
 
             is EpisodeDetailsState.Failed -> ErrorView(modifier)
-            EpisodeDetailsState.LOADING -> LoadingView(modifier = modifier)
+            EpisodeDetailsState.LOADING -> LoadingView(modifier = modifier.fillMaxSize())
         }
     }
 }

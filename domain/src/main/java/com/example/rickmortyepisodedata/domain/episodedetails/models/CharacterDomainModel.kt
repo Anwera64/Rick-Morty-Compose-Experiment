@@ -1,4 +1,4 @@
-package com.example.rickmortyepisodedata.domain.models
+package com.example.rickmortyepisodedata.domain.episodedetails.models
 
 class CharacterDomainModel(
     val name: String?,

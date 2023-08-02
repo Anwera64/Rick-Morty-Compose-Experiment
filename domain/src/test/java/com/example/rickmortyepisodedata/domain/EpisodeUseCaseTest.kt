@@ -1,19 +1,11 @@
 package com.example.rickmortyepisodedata.domain
 
 import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
 import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
-import io.mockk.CapturingSlot
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
-import io.mockk.just
 import io.mockk.mockk
-import io.mockk.runs
-import io.mockk.slot
-import io.mockk.verify
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.test.runTest

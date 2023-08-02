@@ -1,6 +1,6 @@
 package com.example.rickmortyepisodedata.presentation.mappers
 
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.models.CharacterDomainModel
 import com.example.rickmortyepisodedata.presentation.details.model.CharacterData
 
 object CharacterMapper {

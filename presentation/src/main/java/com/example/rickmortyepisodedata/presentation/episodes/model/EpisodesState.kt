@@ -4,7 +4,7 @@ sealed class EpisodesState {
 
     object LOADING : EpisodesState()
 
-    class EpisodesLoaded(val episodes: List<EpisodeData>) : EpisodesState()
+    class Success(val data: EpisodesData) : EpisodesState()
 
     class Failed(val throwable: Throwable): EpisodesState()
 }

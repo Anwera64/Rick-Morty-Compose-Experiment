@@ -2,9 +2,9 @@ package com.example.rickmortyepisodedata.presentation.details
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.EpisodeDetailsUseCase
+import com.example.rickmortyepisodedata.domain.episodedetails.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.models.EpisodeDetailsDomainModel
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailData
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsEvent
 import com.example.rickmortyepisodedata.presentation.details.model.EpisodeDetailsState
@@ -19,7 +19,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class EpisodeDetailsViewModel @Inject constructor(
-    private val useCase: EpisodesUseCase
+    private val useCase: EpisodeDetailsUseCase
 ) : ViewModel() {
 
     private val _episodeStateflow =

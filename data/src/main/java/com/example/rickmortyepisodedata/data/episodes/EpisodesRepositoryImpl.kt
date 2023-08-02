@@ -5,9 +5,9 @@ import com.apollographql.apollo3.api.ApolloResponse
 import com.apollographql.apollo3.api.Optional
 import com.example.rickmortyepisodedata.EpisodeDetailsQuery
 import com.example.rickmortyepisodedata.EpisodeQuery
-import com.example.rickmortyepisodedata.domain.models.CharacterDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.models.CharacterDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodeDomainModel
 import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
 import com.example.rickmortyepisodedata.domain.utils.DateFormatter
 import kotlinx.coroutines.CoroutineDispatcher

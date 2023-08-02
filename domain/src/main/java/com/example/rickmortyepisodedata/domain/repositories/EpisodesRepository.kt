@@ -1,7 +1,7 @@
 package com.example.rickmortyepisodedata.domain.repositories
 
-import com.example.rickmortyepisodedata.domain.models.EpisodeDetailsDomainModel
-import com.example.rickmortyepisodedata.domain.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.domain.episodedetails.models.EpisodeDetailsDomainModel
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodeDomainModel
 import kotlinx.coroutines.flow.Flow
 
 interface EpisodesRepository {
