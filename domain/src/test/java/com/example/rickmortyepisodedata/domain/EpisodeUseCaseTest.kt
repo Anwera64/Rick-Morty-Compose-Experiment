@@ -1,10 +1,11 @@
 package com.example.rickmortyepisodedata.domain
 
 import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodePageDomainModel
 import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
@@ -15,85 +16,60 @@ import org.junit.Test
 class EpisodeUseCaseTest {
 
     private val repository: EpisodesRepository = mockk()
-    private val useCase: EpisodesUseCase =
-        EpisodesUseCase(repository)
+    private val useCase: EpisodesUseCase = EpisodesUseCase(repository)
 
     @Test
-    fun `GIVEN a page number WHEN episode list requested THEN episode list returned`() = runTest {
+    fun `WHEN episode list requested THEN first page of episode list returned`() = runTest {
         val expectedResponse: EpisodeDomainModel = mockk()
         val expectedList = listOf(expectedResponse)
-        val page = 0
+        val page = 1
         coEvery { repository.listEpisodes(any()) } returns flow { emit(expectedList) }
 
-        val result = useCase.listEpisodes(page).first()
+        val result = useCase.listEpisodes().first()
 
         coVerify(exactly = 1) { repository.listEpisodes(page) }
         assertEquals(expectedList, result)
     }
 
     @Test
-    fun `GIVEN an ID WHEN episode details requested THEN episode details returned`() = runTest {
-        val id = "ID"
-        val expectedResponse: EpisodeDetailsDomainModel = mockk()
+    fun `GIVEN pages available WHEN page requested THEN next page returned`() = runTest {
+        val expectedResponse: EpisodeDomainModel = mockk()
+        val expectedList = listOf(expectedResponse)
+        val expectedResult = EpisodePageDomainModel(expectedList, false)
+        val page = 1
 
-        every { expectedResponse.characterList } returns emptyList()
-        coEvery { repository.getEpisodeDetails(any()) } returns flow { emit(expectedResponse) }
+        coEvery { repository.listEpisodes(1) } returns flow { emit(expectedList) }
+        coEvery { repository.listEpisodes(2) } returns flow { emit(expectedList) }
 
-        val result = useCase.getEpisodeDetails(id).first()
+        val result = useCase.listEpisodes().first()
 
-        coVerify(exactly = 1) { repository.getEpisodeDetails(id) }
-        assertEquals(result, expectedResponse)
+        coVerify(exactly = 1) { repository.listEpisodes(page) }
+        assertEquals(expectedList, result)
+
+        val nextPage: EpisodePageDomainModel = useCase.requestNextPage().first()
+
+        coVerify(exactly = 1) { repository.listEpisodes(page + 1) }
+        assertEquals(expectedResult, nextPage)
     }
 
     @Test
-    fun `GIVEN episode details requested WHEN filtered THEN only 1 result returned`() = runTest {
-        val id = "ID"
-        val rickMock = mockk<CharacterDomainModel> {
-            every { name } returns "Rick"
-        }
-        val mortyMock = mockk<CharacterDomainModel> {
-            every { name } returns "Morty"
-        }
-        val charList = listOf(rickMock, mortyMock)
-        val expectedResponse: EpisodeDetailsDomainModel = mockk {
-            every { characterList } returns charList
-        }
+    fun `GIVEN pages unavailable WHEN page requested THEN empty page returned`() = runTest {
+        val expectedResponse: EpisodeDomainModel = mockk()
+        val expectedList = listOf(expectedResponse)
+        val expectedResult = EpisodePageDomainModel(emptyList(), true)
+        val page = 1
 
-        coEvery { repository.getEpisodeDetails(any()) } returns flow { emit(expectedResponse) }
+        coEvery { repository.listEpisodes(1) } returns flow { emit(expectedList) }
+        coEvery { repository.listEpisodes(2) } returns flow { emit(emptyList()) }
 
-        val result = useCase.getEpisodeDetails(id).first()
+        val result = useCase.listEpisodes().first()
 
-        coVerify(exactly = 1) { repository.getEpisodeDetails(id) }
-        assertEquals(expectedResponse, result)
+        coVerify(exactly = 1) { repository.listEpisodes(page) }
+        assertEquals(expectedList, result)
 
-        val finalResult = useCase.filterCharacters("rick").first()
+        val nextPage: EpisodePageDomainModel = useCase.requestNextPage().first()
 
-        assertEquals(listOf(rickMock), finalResult)
-    }
-
-    @Test
-    fun `GIVEN episode details requested WHEN filtered THEN no result returned`() = runTest {
-        val id = "ID"
-        val rickMock = mockk<CharacterDomainModel> {
-            every { name } returns "Rick"
-        }
-        val mortyMock = mockk<CharacterDomainModel> {
-            every { name } returns "Morty"
-        }
-        val charList = listOf(rickMock, mortyMock)
-        val expectedResponse: EpisodeDetailsDomainModel = mockk {
-            every { characterList } returns charList
-        }
-
-        coEvery { repository.getEpisodeDetails(any()) } returns flow { emit(expectedResponse) }
-
-        val result = useCase.getEpisodeDetails(id).first()
-
-        coVerify(exactly = 1) { repository.getEpisodeDetails(id) }
-        assertEquals(expectedResponse, result)
-
-        val finalResult = useCase.filterCharacters("Bazinga").first()
-
-        assertEquals(emptyList<CharacterDomainModel>(), finalResult)
+        coVerify(exactly = 1) { repository.listEpisodes(page + 1) }
+        assertEquals(expectedResult, nextPage)
     }
 }

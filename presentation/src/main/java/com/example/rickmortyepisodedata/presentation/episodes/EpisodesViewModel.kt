@@ -49,11 +49,12 @@ class EpisodesViewModel @Inject constructor(
                 val newState = EpisodesState.Failed(throwable)
                 _episodeStateflow.emit(newState)
             }
-            .collect { domainModels ->
-                val newEpisodes = domainModels.map(EpisodesMapper::mapEpisodeModelToData)
+            .collect { pageDomainModel ->
+                val newEpisodes = pageDomainModel.episodes
+                    .map(EpisodesMapper::mapEpisodeModelToData)
                 val newData = EpisodesData(
                     episodes = data.episodes + newEpisodes,
-                    reachedEnd = newEpisodes.isEmpty()
+                    reachedEnd = pageDomainModel.reachedPageEnd
                 )
                 val newState = EpisodesState.Success(newData)
                 _episodeStateflow.emit(newState)

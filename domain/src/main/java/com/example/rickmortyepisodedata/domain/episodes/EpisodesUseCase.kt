@@ -1,8 +1,10 @@
 package com.example.rickmortyepisodedata.domain.episodes
 
 import com.example.rickmortyepisodedata.domain.episodes.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodePageDomainModel
 import com.example.rickmortyepisodedata.domain.repositories.EpisodesRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class EpisodesUseCase @Inject constructor(private val episodeRepository: EpisodesRepository) {
@@ -13,8 +15,13 @@ class EpisodesUseCase @Inject constructor(private val episodeRepository: Episode
         return episodeRepository.listEpisodes(requestedPage)
     }
 
-    suspend fun requestNextPage(): Flow<List<EpisodeDomainModel>> {
+    suspend fun requestNextPage(): Flow<EpisodePageDomainModel> {
         requestedPage++
-        return episodeRepository.listEpisodes(requestedPage)
+        return episodeRepository.listEpisodes(requestedPage).map { newEpisodes ->
+            EpisodePageDomainModel(
+                episodes = newEpisodes,
+                reachedPageEnd = newEpisodes.isEmpty()
+            )
+        }
     }
 }
