@@ -1,10 +1,10 @@
 package com.example.rickmortyepisodedata.presentation.episodes
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.rickmortyepisodedata.domain.episodes.EpisodesUseCase
-import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodeData
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodeDomainModel
+import com.example.rickmortyepisodedata.domain.episodes.models.EpisodePageDomainModel
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodesData
 import com.example.rickmortyepisodedata.presentation.episodes.model.EpisodesState
 import com.example.rickmortyepisodedata.presentation.mappers.EpisodesMapper
@@ -30,34 +30,39 @@ class EpisodesViewModel @Inject constructor(
     private fun requestEpisodes() = viewModelScope.launch {
         _episodeStateflow.emit(EpisodesState.LOADING)
         useCase.listEpisodes()
-            .catch { throwable ->
-                val newState = EpisodesState.Failed(throwable)
-                _episodeStateflow.emit(newState)
-            }
-            .collect { domainModels ->
-                val episodes = domainModels.map(EpisodesMapper::mapEpisodeModelToData)
-                val data = EpisodesData(episodes)
-                val newState = EpisodesState.Success(data)
-                _episodeStateflow.emit(newState)
-            }
+            .catch { throwable -> emitFailure(throwable) }
+            .collect { domainModels -> handleInitialRequest(domainModels) }
+    }
+
+    private suspend fun handleInitialRequest(domainModels: List<EpisodeDomainModel>) {
+        val episodes = domainModels.map(EpisodesMapper::mapEpisodeModelToData)
+        val data = EpisodesData(episodes)
+        val newState = EpisodesState.Success(data)
+        _episodeStateflow.emit(newState)
     }
 
     fun requestNextPage(data: EpisodesData) = viewModelScope.launch {
-        _episodeStateflow.emit(EpisodesState.Success(data.copy(isLoadingNextPage = true)))
+        val loadingNextPageState = EpisodesState.Success(
+            data = data.copy(isLoadingNextPage = true)
+        )
+        _episodeStateflow.emit(loadingNextPageState)
         useCase.requestNextPage()
-            .catch { throwable ->
-                val newState = EpisodesState.Failed(throwable)
-                _episodeStateflow.emit(newState)
-            }
-            .collect { pageDomainModel ->
-                val newEpisodes = pageDomainModel.episodes
-                    .map(EpisodesMapper::mapEpisodeModelToData)
-                val newData = EpisodesData(
-                    episodes = data.episodes + newEpisodes,
-                    reachedEnd = pageDomainModel.reachedPageEnd
-                )
-                val newState = EpisodesState.Success(newData)
-                _episodeStateflow.emit(newState)
-            }
+            .catch { throwable -> emitFailure(throwable) }
+            .collect { pageDomainModel -> handleNewPage(pageDomainModel, data) }
+    }
+
+    private suspend fun handleNewPage(pageDomainModel: EpisodePageDomainModel, data: EpisodesData) {
+        val newEpisodes = pageDomainModel.episodes.map(EpisodesMapper::mapEpisodeModelToData)
+        val newData = EpisodesData(
+            episodes = data.episodes + newEpisodes,
+            reachedEnd = pageDomainModel.reachedPageEnd
+        )
+        val newState = EpisodesState.Success(newData)
+        _episodeStateflow.emit(newState)
+    }
+
+    private suspend fun emitFailure(throwable: Throwable) {
+        val newState = EpisodesState.Failed(throwable)
+        _episodeStateflow.emit(newState)
     }
 }

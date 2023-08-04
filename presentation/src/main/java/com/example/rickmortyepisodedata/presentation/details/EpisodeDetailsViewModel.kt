@@ -37,15 +37,14 @@ class EpisodeDetailsViewModel @Inject constructor(
         this@EpisodeDetailsViewModel.id = id
         _episodeStateflow.emit(EpisodeDetailsState.LOADING)
         useCase.getEpisodeDetails(id)
-            .catch { throwable ->
-                val newState = EpisodeDetailsState.Failed(throwable)
-                _episodeStateflow.emit(newState)
-            }
-            .collect { domainModel: EpisodeDetailsDomainModel ->
-                val episodeDetailData = EpisodesMapper.mapEpisodeDetailModelToData(domainModel)
-                val newState = EpisodeDetailsState.Success(episodeDetailData)
-                _episodeStateflow.emit(newState)
-            }
+            .catch { throwable -> emitFailedState(throwable) }
+            .collect { domainModel: EpisodeDetailsDomainModel -> handleDetailsModel(domainModel) }
+    }
+
+    private suspend fun handleDetailsModel(domainModel: EpisodeDetailsDomainModel) {
+        val episodeDetailData = EpisodesMapper.mapEpisodeDetailModelToData(domainModel)
+        val newState = EpisodeDetailsState.Success(episodeDetailData)
+        _episodeStateflow.emit(newState)
     }
 
     fun receiveEvent(event: EpisodeDetailsEvent) = viewModelScope.launch {
@@ -61,19 +60,29 @@ class EpisodeDetailsViewModel @Inject constructor(
 
     private suspend fun filterCharacters(query: String, data: EpisodeDetailData) {
         useCase.filterCharacters(query)
-            .catch { throwable ->
-                val newState = EpisodeDetailsState.Failed(throwable)
-                _episodeStateflow.emit(newState)
-            }
+            .catch { throwable -> emitFailedState(throwable) }
             .collect { filteredData: List<CharacterDomainModel> ->
-                val mappedFilteredList = filteredData.map(CharacterMapper::mapCharacterModelToData)
-                val newData = data.copy(
-                    characters = mappedFilteredList,
-                    query = query
-                )
-                val newState = EpisodeDetailsState.Success(newData)
-                _episodeStateflow.emit(newState)
+                handleFilterResult(filteredData, data, query)
             }
+    }
+
+    private suspend fun handleFilterResult(
+        filteredData: List<CharacterDomainModel>,
+        data: EpisodeDetailData,
+        query: String
+    ) {
+        val mappedFilteredList = filteredData.map(CharacterMapper::mapCharacterModelToData)
+        val newData = data.copy(
+            characters = mappedFilteredList,
+            query = query
+        )
+        val newState = EpisodeDetailsState.Success(newData)
+        _episodeStateflow.emit(newState)
+    }
+
+    private suspend fun emitFailedState(throwable: Throwable) {
+        val newState = EpisodeDetailsState.Failed(throwable)
+        _episodeStateflow.emit(newState)
     }
 
     private suspend fun handleSearchToggledEvent(event: EpisodeDetailsEvent.SearchToggled) {
@@ -81,8 +90,8 @@ class EpisodeDetailsViewModel @Inject constructor(
         when {
             searchToggled -> dispatchSearchToggled(event)
             event.episodeDetailData != null -> filterCharacters(
-                "",
-                event.episodeDetailData.copy(searchToggled = false)
+                query = "",
+                data = event.episodeDetailData.copy(searchToggled = false)
             )
 
             else -> requestDetails(id)
